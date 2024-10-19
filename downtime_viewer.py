@@ -1,12 +1,18 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from datetime import datetime
+import style
 
-class DowntimeDisplay:
+class DowntimeViewer:
     def __init__(self, db):
+        header_font = style.header_font
+        entry_font = style.entry_font
+        entry_width = style.entry_width
+        theme = style.theme
+
         self.db = db
         self.root = ttk.Window()  # Using a theme for modern look
-        self.root.title("Downtime Display")
+        self.root.title("Downtime Viewer")
 
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
@@ -18,7 +24,7 @@ class DowntimeDisplay:
         self.root.geometry(self.main_geometry)
 
         # Title Label
-        self.title_label = ttk.Label(self.root, text="Active Downages", bootstyle="primary")
+        self.title_label = ttk.Label(self.root, text="Active Downages", bootstyle="primary", font = header_font)
         self.title_label.pack(padx=10, pady=10)
 
         # Frame to hold the downtimes
@@ -30,7 +36,7 @@ class DowntimeDisplay:
 
     def format_downage(self, downage):
         # Format the downtime data for display
-        name, location, details, timestamp, resolved, stage = downage
+        name, location, eqname, eqid, details, timestamp, resolved, stage = downage
         resolved_text = "Resolved" if resolved == 1 else "Unresolved"
         resolved_color = "success" if resolved == 1 else "danger"
         
@@ -42,6 +48,8 @@ class DowntimeDisplay:
 
         downtime_string = (f"Name: {name}\n"
                         f"Location: {location}\n"
+                        f"Equipment Name: {eqname}\n"
+                        f"Equipment ID: {eqid}\n"
                         f"Details: {details}\n"
                         f"Time: {timestamp_str.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp_str, datetime) else timestamp_str}\n"
                         f"Stage: {stage}\n"

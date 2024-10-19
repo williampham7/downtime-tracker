@@ -12,6 +12,8 @@ class DowntimeDatabase:
                             (id INTEGER PRIMARY KEY AUTOINCREMENT,
                              name TEXT,
                              location TEXT,
+                             eqname TEXT,
+                             eqid TEXT,
                              details TEXT,
                              timestamp DATETIME,
                              resolved INTEGER DEFAULT 0,
@@ -20,10 +22,12 @@ class DowntimeDatabase:
 
     def add_downtime(self, downage_obj):
         # Insert the Downage object data into the database
-        self.cursor.execute('''INSERT INTO downtime (name, location, details, timestamp, resolved, stage) 
-                               VALUES (?, ?, ?, ?, ?, ?)''',
+        self.cursor.execute('''INSERT INTO downtime (name, location, eqname, eqid, details, timestamp, resolved, stage) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                             (downage_obj.name,
                              downage_obj.location,
+                             downage_obj.eqname,
+                             downage_obj.eqid,
                              downage_obj.details,
                              downage_obj.timestamp,  # Store as a string
                              int(downage_obj.resolved),  # Store boolean as int (0 or 1)
@@ -32,12 +36,12 @@ class DowntimeDatabase:
 
     def get_all_downtime(self):
         # Retrieve all downtime entries from the database
-        self.cursor.execute("SELECT name, location, details, timestamp, resolved, stage FROM downtime")
+        self.cursor.execute("SELECT name, location, eqname, eqid, details, timestamp, resolved, stage FROM downtime")
         return self.cursor.fetchall()
     
     def get_all_unresolved(self):
         # Retrieve all UNRESOLVED Downage entries from the database
-        self.cursor.execute("SELECT name, location, details, timestamp, resolved, stage FROM downtime WHERE resolved = 0")        
+        self.cursor.execute("SELECT nname, location, eqname, eqid, details, timestamp, resolved, stage FROM downtime WHERE resolved = 0")        
         return self.cursor.fetchall()
     
     def resolve_downtime(self, downtime_id):
