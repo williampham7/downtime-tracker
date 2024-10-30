@@ -21,7 +21,23 @@ class Downage:
                 f"details='{self.details}', resolved='{self.resolved}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}')")
     
     def elapsed_time(self):
-        return datetime.now() - self.timestamp
+
+        time_difference = datetime.now() - self.timestamp
+        total_seconds = int(time_difference.total_seconds())
+        days, hremainder = divmod(total_seconds, 86400)
+        hours, mremainder = divmod(hremainder, 3600)
+        minutes, seconds = divmod(mremainder, 60)
+
+        # Format the output
+        if hours > 0:
+            if hours >= 24:
+                result = f"{days}d {hours}h ago"
+            else:
+                result = f"{hours}h {minutes}m ago"
+        else:
+            result = f"{minutes}m ago"
+
+        return result
     
     def send_initial_message():
         # send first emails 

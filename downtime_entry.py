@@ -35,6 +35,7 @@ class DowntimeEntry:
         self.dt_list = [downage1, downage2, downage3]
         self.dt_ids = [d.id for d in self.dt_list]
         self.id_checklist = []
+        self.update_counter = 0
 
         self.update_actives
 
@@ -113,17 +114,24 @@ class DowntimeEntry:
         self.active_label = ttk.Label(self.right_frame, text="Active Downages", bootstyle="primary", font = header_font)
         self.active_label.grid(row=0, column=0, pady=20, padx = 50)
 
+        self.actives_frame = ttk.Frame(self.right_frame)
+        self.actives_frame.grid(row=1, column=0, sticky=N)
         self.update_actives()
 
     def update_actives(self):
         self.dt_ids = [d.id for d in self.dt_list]
 
-        if self.dt_ids != self.id_checklist:
+        if self.dt_ids != self.id_checklist or self.update_counter >= 300:
+            self.update_counter = 0
             self.id_checklist = [d.id for d in self.dt_list]
+            for widget in self.actives_frame.winfo_children():
+                widget.destroy()
+
             for row, downage in enumerate(self.dt_list):
-                self.create_active_downtime(self.right_frame, downage, row)
-        
-        self.root.after(1000, self.update_actives)
+                self.create_active_downtime(self.actives_frame, downage, row)
+
+        self.update_counter += 1
+        self.root.after(200, self.update_actives)
 
     def create_active_downtime(self, parent, downage, row):
         #temp vars
@@ -143,7 +151,6 @@ class DowntimeEntry:
 
         def resolve_downtime():
             self.dt_list.remove(downage)
-            active_downtime.destroy()
 
         # Resolve and alert buttons
         resolve_button = ttk.Button(active_downtime, text="Resolve", bootstyle="danger-outline", command=resolve_downtime)
@@ -162,9 +169,6 @@ class DowntimeEntry:
         # Create a new Downage object
         new_downage = Downage(name, line, eqname, eqid, details)
         self.dt_list.append(new_downage)
-
-        # Add to database or perform other logic
-        #self.db.add_downtime(new_downage)
 
         print(f"New downtime submitted: {new_downage}")
 
