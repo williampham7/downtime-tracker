@@ -2,7 +2,7 @@ from datetime import datetime
 import uuid
 
 class Downage:
-    def __init__(self, name, eqname, eqid, location, details):
+    def __init__(self, name, location, eqname, eqid, details):
         self.id = str(uuid.uuid4())
         self.name = name
         self.location = location
@@ -19,6 +19,9 @@ class Downage:
         # Customize how the object is displayed when printed
         return (f"Downage(name='{self.name}', location='{self.location}', eqname='{self.eqname}', eqid='{self.eqid}', "
                 f"details='{self.details}', resolved='{self.resolved}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}')")
+    
+    def elapsed_time(self):
+        return datetime.now() - self.timestamp
     
     def send_initial_message():
         # send first emails 

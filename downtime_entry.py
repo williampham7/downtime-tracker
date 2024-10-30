@@ -33,9 +33,10 @@ class DowntimeEntry:
         downage3 = Downage('Bob', 'Chip & Wire', 'Reflow', '62412', '')
         
         self.dt_list = [downage1, downage2, downage3]
-        self.dt_ids = [d.id for d in dt_list]
+        self.dt_ids = [d.id for d in self.dt_list]
+        self.id_checklist = []
 
-        self.root.after(1000, self.update_actives)
+        self.update_actives
 
         # styling
         self.style = ttk.Style(theme=style.theme)
@@ -67,9 +68,6 @@ class DowntimeEntry:
 
         self.populate_left_frame()
         self.populate_right_frame()
-
-    def update_actives(self):
-        pass
 
     def populate_left_frame(self): 
         # Title for the left frame
@@ -115,13 +113,22 @@ class DowntimeEntry:
         self.active_label = ttk.Label(self.right_frame, text="Active Downages", bootstyle="primary", font = header_font)
         self.active_label.grid(row=0, column=0, pady=20, padx = 50)
 
-        # Example of active downtime event (this would be dynamic in real usage)
-        self.create_active_downtime(self.right_frame, "SSPA Line", "3h 25m ago", "Red", 0)
-        self.create_active_downtime(self.right_frame, "Chip & Wire", "1h 15m ago", "Orange", 1)
-        self.create_active_downtime(self.right_frame, "Chip & Wire", "15m ago", "Yellow", 2)
-        self.create_active_downtime(self.right_frame, "SSPA Line", "15m ago", "Yellow", 3)
+        self.update_actives()
 
-    def create_active_downtime(self, parent, line_name, time_elapsed, icon_color, row):
+    def update_actives(self):
+        self.dt_ids = [d.id for d in self.dt_list]
+
+        if self.dt_ids != self.id_checklist:
+            self.id_checklist = [d.id for d in self.dt_list]
+            for row, downage in enumerate(self.dt_list):
+                self.create_active_downtime(self.right_frame, downage, row)
+        
+        self.root.after(1000, self.update_actives)
+
+    def create_active_downtime(self, parent, downage, row):
+        #temp vars
+        icon_color ="Orange"
+
         # Create frame for downtime
         active_downtime = ttk.Frame(parent, bootstyle="secondary")
         active_downtime.grid(row=row + 1, column=0, pady=10, sticky=W + E)
@@ -131,10 +138,11 @@ class DowntimeEntry:
         icon_label.grid(row=0, column=0, padx=10, pady=5)
  
         # Downtime details (line and time elapsed)
-        downtime_label = ttk.Label(active_downtime, text=f"{line_name}\n{time_elapsed}", style = 'DownageLabel.TLabel')
+        downtime_label = ttk.Label(active_downtime, text=f"{downage.location}\n{downage.elapsed_time()}", style = 'DownageLabel.TLabel')
         downtime_label.grid(row=0, column=1, padx=(10,20), pady=5)
 
         def resolve_downtime():
+            self.dt_list.remove(downage)
             active_downtime.destroy()
 
         # Resolve and alert buttons
@@ -153,9 +161,10 @@ class DowntimeEntry:
 
         # Create a new Downage object
         new_downage = Downage(name, line, eqname, eqid, details)
+        self.dt_list.append(new_downage)
 
         # Add to database or perform other logic
-        self.db.add_downtime(new_downage)
+        #self.db.add_downtime(new_downage)
 
         print(f"New downtime submitted: {new_downage}")
 
