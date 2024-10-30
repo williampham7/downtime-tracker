@@ -25,14 +25,24 @@ class DowntimeEntry:
         self.main_geometry = (f"{self.main_window_x}x{self.main_window_y}+{self.main_corner_x}+{self.main_corner_y}")
         self.root.geometry(self.main_geometry)
 
+
+        #VARIABLES
+
+        downage1 = Downage('Bob', 'Chip & Wire', 'Reflow', '62412', '')
+        downage2 = Downage('Bob', 'SSPA Line', 'Reflow', '62412', '')
+        downage3 = Downage('Bob', 'Chip & Wire', 'Reflow', '62412', '')
+        
+        self.dt_list = [downage1, downage2, downage3]
+        self.dt_ids = [d.id for d in dt_list]
+
+        self.root.after(1000, self.update_actives)
+
         # styling
         self.style = ttk.Style(theme=style.theme)
         style.set_custom_styles(self)
 
         # Make sure that the main frame fills the entire window
         self.root.grid_columnconfigure(0, weight=1)
-
-        # Main frame to divide left and right sections, expand to fit entire window
         self.main_frame = ttk.Frame(self.root)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
 
@@ -43,14 +53,25 @@ class DowntimeEntry:
         self.left_frame = ttk.Frame(self.main_frame)
         self.left_frame.grid(row=0, column=0, padx=50, pady=10, sticky=N)
 
+        # Divider between left and right
+        self.divider = ttk.Separator(self.main_frame, orient=VERTICAL)
+        self.divider.grid(row=0, column=1, padx=20, pady=10, sticky="ns")
+
         # Right frame for active downtimes, expanding to take up available space
         self.right_frame = ttk.Frame(self.main_frame)
         self.right_frame.grid(row=0, column=2, padx=50, pady=10, sticky="nsew")
 
-        # Title for the right frame
-        self.active_label = ttk.Label(self.right_frame, text="Active Downages", bootstyle="primary", font = header_font)
-        self.active_label.grid(row=0, column=0, pady=20)
+        # Button to open the display window, moving it to its own row to avoid overlap
+        self.viewer_button = ttk.Button(self.main_frame, text="Open Viewer", bootstyle="info", command=self.open_viewer)
+        self.viewer_button.grid(row=0, column=2, padx=10, pady=10, sticky="ne")
 
+        self.populate_left_frame()
+        self.populate_right_frame()
+
+    def update_actives(self):
+        pass
+
+    def populate_left_frame(self): 
         # Title for the left frame
         self.entry_label = ttk.Label(self.left_frame, text="Enter New Downage", bootstyle="primary", font = header_font)
         self.entry_label.grid(row=0, column=0, pady=20)
@@ -89,22 +110,18 @@ class DowntimeEntry:
         self.submit_button = ttk.Button(self.left_frame, text="Submit", bootstyle="success", command=self.submit)
         self.submit_button.grid(row=11, column=0, padx = 20, pady=20)
 
-        # Divider between left and right
-        self.divider = ttk.Separator(self.main_frame, orient=VERTICAL)
-        self.divider.grid(row=0, column=1, padx=20, pady=10, sticky="ns")
-
+    def populate_right_frame(self):
+        # Title for the right frame
+        self.active_label = ttk.Label(self.right_frame, text="Active Downages", bootstyle="primary", font = header_font)
+        self.active_label.grid(row=0, column=0, pady=20, padx = 50)
 
         # Example of active downtime event (this would be dynamic in real usage)
         self.create_active_downtime(self.right_frame, "SSPA Line", "3h 25m ago", "Red", 0)
         self.create_active_downtime(self.right_frame, "Chip & Wire", "1h 15m ago", "Orange", 1)
         self.create_active_downtime(self.right_frame, "Chip & Wire", "15m ago", "Yellow", 2)
-
-        # Button to open the display window, moving it to its own row to avoid overlap
-        self.display_button = ttk.Button(self.main_frame, text="Open Viewer", bootstyle="info", command=self.open_viewer)
-        self.display_button.grid(row=0, column=2, padx=10, pady=10, sticky="ne")
+        self.create_active_downtime(self.right_frame, "SSPA Line", "15m ago", "Yellow", 3)
 
     def create_active_downtime(self, parent, line_name, time_elapsed, icon_color, row):
-        """Helper function to create an active downtime widget."""
         # Create frame for downtime
         active_downtime = ttk.Frame(parent, bootstyle="secondary")
         active_downtime.grid(row=row + 1, column=0, pady=10, sticky=W + E)
@@ -117,8 +134,11 @@ class DowntimeEntry:
         downtime_label = ttk.Label(active_downtime, text=f"{line_name}\n{time_elapsed}", style = 'DownageLabel.TLabel')
         downtime_label.grid(row=0, column=1, padx=(10,20), pady=5)
 
+        def resolve_downtime():
+            active_downtime.destroy()
+
         # Resolve and alert buttons
-        resolve_button = ttk.Button(active_downtime, text="Resolve", bootstyle="danger-outline")
+        resolve_button = ttk.Button(active_downtime, text="Resolve", bootstyle="danger-outline", command=resolve_downtime)
         resolve_button.grid(row=0, column=2, padx=(10,5), sticky=E)
 
         alert_button = ttk.Button(active_downtime, text="Alert", bootstyle="warning-outline")

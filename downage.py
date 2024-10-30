@@ -1,7 +1,9 @@
 from datetime import datetime
+import uuid
 
 class Downage:
     def __init__(self, name, eqname, eqid, location, details):
+        self.id = str(uuid.uuid4())
         self.name = name
         self.location = location
         self.eqname = eqname
