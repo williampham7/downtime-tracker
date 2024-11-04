@@ -117,8 +117,8 @@ class DowntimeEntry:
         self.update_actives()
 
     def update_actives(self):
-        self.dt_list = [Downage(name, location, eqname, eqid, details, id, resolved) 
-                        for id, name, location, eqname, eqid, details, resolved, _, _ in self.db_instance.get_all_unresolved()]
+        self.dt_list = [Downage(name, location, eqname, eqid, details, id, timestamp) 
+                        for id, name, location, eqname, eqid, details, timestamp, _, _ in self.db_instance.get_all_unresolved()]
         self.dt_ids = [d.id for d in self.dt_list]
 
         if self.dt_ids != self.id_checklist or self.update_counter >= 300:
@@ -130,20 +130,18 @@ class DowntimeEntry:
             for row, downage in enumerate(self.dt_list):
                 self.create_active_downtime(self.actives_frame, downage, row)
 
-        # print(self.dt_list)
-        # print('---')
-
         self.update_counter += 1
         self.root.after(200, self.update_actives)
 
     def create_active_downtime(self, parent, downage, row):
         #determine Icon color based on time elapsed
-        icon_color = "Yellow"
+
+        icon_color = 'Yellow'
 
         if downage.elapsed_time() > 7200:
-            icon_color = "Orange"
-        elif downage.elapsed_time() > 1800:
-            icon_color == "Red"
+            icon_color = 'Red'
+        if downage.elapsed_time() > 1800:
+            icon_color = 'Orange'
 
         # Create frame for downtime
         active_downtime = ttk.Frame(parent, bootstyle="secondary")

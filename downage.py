@@ -2,24 +2,30 @@ from datetime import datetime
 import uuid
 
 class Downage:
-    def __init__(self, name, location, eqname, eqid, details, id = None, resolved=False, time_resolved=None, time_to_resolve=None):
+    def __init__(self, name, location, eqname, eqid, details, id = None, timestamp = datetime.now(), resolved=False, time_resolved=None, time_to_resolve=None):
         self.id = id if id is not None else str(uuid.uuid4())
         self.name = name
         self.location = location
         self.eqname = eqname
         self.eqid = eqid
         self.details = details
-        self.timestamp = datetime.now()
         self.resolved = resolved
         self.time_resolved = time_resolved
         self.time_to_resolve = time_to_resolve
+
+        if isinstance(timestamp, str):
+            self.timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
+        elif isinstance(timestamp, datetime):
+            self.timestamp = timestamp
+        else:
+            self.timestamp = None
 
         # self.send_initial_message()
 
     def __repr__(self):
         # Customize how the object is displayed when printed
-        return (f"Downage(name='{self.name}', location='{self.location}', eqname='{self.eqname}', eqid='{self.eqid}', "
-                f"details='{self.details}', resolved='{self.resolved}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}')")
+        return (f"Downage(id='{self.id}, 'name='{self.name}', location='{self.location}', eqname='{self.eqname}', eqid='{self.eqid}', "
+                f"details='{self.details}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}', resolved='{self.resolved}', time_resolved='{self.time_resolved}', time_to_resolve='{self.time_to_resolve}')")
     
     def elapsed_time(self):
         elapsed_time = datetime.now() - self.timestamp
