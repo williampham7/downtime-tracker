@@ -2,16 +2,17 @@ from datetime import datetime
 import uuid
 
 class Downage:
-    def __init__(self, name, location, eqname, eqid, details):
-        self.id = str(uuid.uuid4())
+    def __init__(self, name, location, eqname, eqid, details, id = None, resolved=False, time_resolved=None, time_to_resolve=None):
+        self.id = id if id is not None else str(uuid.uuid4())
         self.name = name
         self.location = location
         self.eqname = eqname
         self.eqid = eqid
         self.details = details
-        self.timestamp = datetime.now() 
-        self.resolved = False
-        self.stage = 0
+        self.timestamp = datetime.now()
+        self.resolved = resolved
+        self.time_resolved = time_resolved
+        self.time_to_resolve = time_to_resolve
 
         # self.send_initial_message()
 
@@ -21,9 +22,12 @@ class Downage:
                 f"details='{self.details}', resolved='{self.resolved}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}')")
     
     def elapsed_time(self):
+        elapsed_time = datetime.now() - self.timestamp
+        elapsed_secs = int(elapsed_time.total_seconds())
+        return elapsed_secs
 
-        time_difference = datetime.now() - self.timestamp
-        total_seconds = int(time_difference.total_seconds())
+    def elapsed_time_string(self):
+        total_seconds = self.elapsed_time()
         days, hremainder = divmod(total_seconds, 86400)
         hours, mremainder = divmod(hremainder, 3600)
         minutes, seconds = divmod(mremainder, 60)
@@ -42,10 +46,6 @@ class Downage:
     def send_initial_message():
         # send first emails 
         return
-
-    def increment_stage(self):
-        self.stage += 1
-        self.action(self)
 
     def action(self):
         if self.resolved == True:

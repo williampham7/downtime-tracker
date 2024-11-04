@@ -4,6 +4,7 @@ from ttkbootstrap.constants import *
 from ttkbootstrap import Style
 from downtime_viewer import DowntimeViewer
 from downage import Downage
+from downtime_db_conn import DowntimeDatabase
 import style
 
 # SETTINGS
@@ -13,12 +14,12 @@ entry_width = style.entry_width
 
 class DowntimeEntry:
     def __init__(self, db):
-        self.db = db
+        self.db_instance = db
         self.root = ttk.Window()
         self.root.title("Downtime Tracker")
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
-        self.main_window_x =1000
+        self.main_window_x =1100
         self.main_window_y = 620
         self.main_corner_x = (self.screen_width // 2) - (self.main_window_x // 2)
         self.main_corner_y = (self.screen_height // 2) - (self.main_window_y // 2) - self.screen_height // 15
@@ -26,15 +27,12 @@ class DowntimeEntry:
         self.root.geometry(self.main_geometry)
 
 
-        #VARIABLES
-
-        downage1 = Downage('Bob', 'Chip & Wire', 'Reflow', '62412', '')
-        downage2 = Downage('Bob', 'SSPA Line', 'Reflow', '62412', '')
-        downage3 = Downage('Bob', 'Chip & Wire', 'Reflow', '62412', '')
-        
-        self.dt_list = [downage1, downage2, downage3]
-        self.dt_ids = [d.id for d in self.dt_list]
+        #VARIABLES 
+        #to update the actives panel
+        self.dt_list = []
+        self.dt_ids = []
         self.id_checklist = []
+        # for loop to update time delta between downage upload to current time
         self.update_counter = 0
 
         self.update_actives
@@ -119,6 +117,8 @@ class DowntimeEntry:
         self.update_actives()
 
     def update_actives(self):
+        self.dt_list = [Downage(name, location, eqname, eqid, details, id, resolved) 
+                        for id, name, location, eqname, eqid, details, resolved, _, _ in self.db_instance.get_all_unresolved()]
         self.dt_ids = [d.id for d in self.dt_list]
 
         if self.dt_ids != self.id_checklist or self.update_counter >= 300:
@@ -130,34 +130,51 @@ class DowntimeEntry:
             for row, downage in enumerate(self.dt_list):
                 self.create_active_downtime(self.actives_frame, downage, row)
 
+        # print(self.dt_list)
+        # print('---')
+
         self.update_counter += 1
         self.root.after(200, self.update_actives)
 
     def create_active_downtime(self, parent, downage, row):
-        #temp vars
-        icon_color ="Orange"
+        #determine Icon color based on time elapsed
+        icon_color = "Yellow"
+
+        if downage.elapsed_time() > 7200:
+            icon_color = "Orange"
+        elif downage.elapsed_time() > 1800:
+            icon_color == "Red"
 
         # Create frame for downtime
         active_downtime = ttk.Frame(parent, bootstyle="secondary")
         active_downtime.grid(row=row + 1, column=0, pady=10, sticky=W + E)
+
+        # Disable the frame's ability to shrink
+        active_downtime.grid_propagate(False)
+        # Set the desired width and height
+        active_downtime.config(width=450, height = 90)
 
         # Circular icon
         icon_label = ttk.Label(active_downtime, text="●", style = icon_color + 'Icon.TLabel', bootstyle=icon_color)
         icon_label.grid(row=0, column=0, padx=10, pady=5)
  
         # Downtime details (line and time elapsed)
-        downtime_label = ttk.Label(active_downtime, text=f"{downage.location}\n{downage.elapsed_time()}", style = 'DownageLabel.TLabel')
+        downtime_label = ttk.Label(active_downtime, text=f"{downage.location}\n{downage.elapsed_time_string()}", style = 'DownageLabel.TLabel')
         downtime_label.grid(row=0, column=1, padx=(10,20), pady=5)
 
         def resolve_downtime():
-            self.dt_list.remove(downage)
+            print(downage)
+            self.db_instance.resolve_downtime(downage.id)
 
         # Resolve and alert buttons
         resolve_button = ttk.Button(active_downtime, text="Resolve", bootstyle="danger-outline", command=resolve_downtime)
-        resolve_button.grid(row=0, column=2, padx=(10,5), sticky=E)
+        resolve_button.grid(row=0, column=2, padx=(10,10), sticky=E)
 
         alert_button = ttk.Button(active_downtime, text="Alert", bootstyle="warning-outline")
-        alert_button.grid(row=0, column=3, padx=(5,15), sticky=E)
+        alert_button.grid(row=0, column=3, padx=(0,20), sticky=E)
+
+        # for col in range(4):
+        #     active_downtime.grid_columnconfigure(col, weight=1)
 
     def submit(self):
         name = self.name_entry.get()
@@ -168,9 +185,7 @@ class DowntimeEntry:
 
         # Create a new Downage object
         new_downage = Downage(name, line, eqname, eqid, details)
-        self.dt_list.append(new_downage)
-
-        print(f"New downtime submitted: {new_downage}")
+        self.db_instance.add_downtime(new_downage)
 
     def open_viewer(self):
         downtime_viewer_window = DowntimeViewer(self.db)

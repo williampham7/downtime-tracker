@@ -1,5 +1,5 @@
 from downtime_entry import DowntimeEntry
-from downtime_db import DowntimeDatabase
+from downtime_db_conn import DowntimeDatabase
 import ctypes
 
 def main():
