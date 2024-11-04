@@ -1,4 +1,3 @@
-import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap import Style
@@ -17,10 +16,12 @@ class DowntimeEntry:
         self.db_instance = db
         self.root = ttk.Window()
         self.root.title("Downtime Tracker")
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
         self.main_window_x =1100
         self.main_window_y = 620
+
+        # Center the window in screen
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
         self.main_corner_x = (self.screen_width // 2) - (self.main_window_x // 2)
         self.main_corner_y = (self.screen_height // 2) - (self.main_window_y // 2) - self.screen_height // 15
         self.main_geometry = (f"{self.main_window_x}x{self.main_window_y}+{self.main_corner_x}+{self.main_corner_y}")
@@ -82,8 +83,8 @@ class DowntimeEntry:
         # Production line / area input
         self.line_label = ttk.Label(self.left_frame, text="Prod. Line / Area:", font = entry_font)
         self.line_label.grid(row=3, column=0, sticky=W)
-        self.line_entry = ttk.Entry(self.left_frame, width=entry_width)
-        self.line_entry.grid(row=4, column=0, pady=5)
+        self.line_dropdown = ttk.Combobox(self.left_frame, values=[], width = 43)
+        self.line_dropdown.grid(row=4, column=0)
 
         # equipment name
         self.eqname_label = ttk.Label(self.left_frame, text="Equipment Name:", font = entry_font)
@@ -140,11 +141,12 @@ class DowntimeEntry:
 
         if downage.elapsed_time() > 7200:
             icon_color = 'Red'
-        if downage.elapsed_time() > 1800:
+            print('yanoi')
+        elif downage.elapsed_time() > 1800:
             icon_color = 'Orange'
 
         # Create frame for downtime
-        active_downtime = ttk.Frame(parent, bootstyle="secondary")
+        active_downtime = ttk.Frame(parent, style='ActiveFrame.TFrame')
         active_downtime.grid(row=row + 1, column=0, pady=10, sticky=W + E)
 
         # Disable the frame's ability to shrink
@@ -154,7 +156,7 @@ class DowntimeEntry:
 
         # Circular icon
         icon_label = ttk.Label(active_downtime, text="●", style = icon_color + 'Icon.TLabel', bootstyle=icon_color)
-        icon_label.grid(row=0, column=0, padx=10, pady=5)
+        icon_label.grid(row=0, column=0, padx=20, pady=5)
  
         # Downtime details (line and time elapsed)
         downtime_label = ttk.Label(active_downtime, text=f"{downage.location}\n{downage.elapsed_time_string()}", style = 'DownageLabel.TLabel')
@@ -169,14 +171,17 @@ class DowntimeEntry:
         resolve_button.grid(row=0, column=2, padx=(10,10), sticky=E)
 
         alert_button = ttk.Button(active_downtime, text="Alert", bootstyle="warning-outline")
-        alert_button.grid(row=0, column=3, padx=(0,20), sticky=E)
+        alert_button.grid(row=0, column=3, padx=(0,10), sticky=E)
+
+        info_button = ttk.Button(active_downtime, text="Info", bootstyle="info-outline")
+        info_button.grid(row=0, column=4, padx=(0,20), sticky=E)
 
         # for col in range(4):
         #     active_downtime.grid_columnconfigure(col, weight=1)
 
     def submit(self):
         name = self.name_entry.get()
-        line = self.line_entry.get()
+        line = self.line_dropdown.get()
         eqname = self.eqname_entry.get()
         eqid = self.eqid_entry.get()
         details = self.details_entry.get()
