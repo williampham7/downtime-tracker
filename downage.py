@@ -2,7 +2,7 @@ from datetime import datetime
 import uuid
 
 class Downage:
-    def __init__(self, name, location, eqname, eqid, details, id = None, timestamp = datetime.now(), resolved=False, time_resolved=None, time_to_resolve=None):
+    def __init__(self, name, location, eqname, eqid, details, id = None, timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), resolved=False, time_resolved=None, time_to_resolve=None):
         self.id = id if id is not None else str(uuid.uuid4())
         self.name = name
         self.location = location
@@ -14,7 +14,7 @@ class Downage:
         self.time_to_resolve = time_to_resolve
 
         if isinstance(timestamp, str):
-            self.timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
+            self.timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
         elif isinstance(timestamp, datetime):
             self.timestamp = timestamp
         else:

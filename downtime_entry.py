@@ -3,8 +3,9 @@ from ttkbootstrap.constants import *
 from ttkbootstrap import Style
 from downtime_viewer import DowntimeViewer
 from downage import Downage
-from downtime_db_conn import DowntimeDatabase
-import style
+from info_window import info_window
+from center_window import center_window
+import style, json
 
 # SETTINGS
 header_font = style.header_font
@@ -12,21 +13,25 @@ entry_font = style.entry_font
 entry_width = style.entry_width
 
 class DowntimeEntry:
-    def __init__(self, db):
+    def __init__(self, db, config_path):
         self.db_instance = db
+        self.config_path = config_path
         self.root = ttk.Window()
         self.root.title("Downtime Tracker")
-        self.main_window_x =1100
-        self.main_window_y = 620
+        main_window_x =1100
+        main_window_y = 620
 
-        # Center the window in screen
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
-        self.main_corner_x = (self.screen_width // 2) - (self.main_window_x // 2)
-        self.main_corner_y = (self.screen_height // 2) - (self.main_window_y // 2) - self.screen_height // 15
-        self.main_geometry = (f"{self.main_window_x}x{self.main_window_y}+{self.main_corner_x}+{self.main_corner_y}")
-        self.root.geometry(self.main_geometry)
+        center_window(self.root, main_window_x, main_window_y)
 
+        #config file
+        try:
+            with open(self.config_path, 'r') as file:
+                config_data = json.load(file)
+            
+            self.line_options = config_data['line_options']
+            self.line_options.sort()
+        except:
+            self.line_options = []
 
         #VARIABLES 
         #to update the actives panel
@@ -83,7 +88,7 @@ class DowntimeEntry:
         # Production line / area input
         self.line_label = ttk.Label(self.left_frame, text="Prod. Line / Area:", font = entry_font)
         self.line_label.grid(row=3, column=0, sticky=W)
-        self.line_dropdown = ttk.Combobox(self.left_frame, values=[], width = 43)
+        self.line_dropdown = ttk.Combobox(self.left_frame, values=self.line_options, width = 43)
         self.line_dropdown.grid(row=4, column=0)
 
         # equipment name
@@ -141,7 +146,6 @@ class DowntimeEntry:
 
         if downage.elapsed_time() > 7200:
             icon_color = 'Red'
-            print('yanoi')
         elif downage.elapsed_time() > 1800:
             icon_color = 'Orange'
 
@@ -173,7 +177,7 @@ class DowntimeEntry:
         alert_button = ttk.Button(active_downtime, text="Alert", bootstyle="warning-outline")
         alert_button.grid(row=0, column=3, padx=(0,10), sticky=E)
 
-        info_button = ttk.Button(active_downtime, text="Info", bootstyle="info-outline")
+        info_button = ttk.Button(active_downtime, text="Info", bootstyle="info-outline", command = lambda: info_window(downage))
         info_button.grid(row=0, column=4, padx=(0,20), sticky=E)
 
         # for col in range(4):
