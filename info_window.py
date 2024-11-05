@@ -5,7 +5,7 @@ def info_window(downage):
         info_window = ttk.Toplevel()
         info_window.title("Downage Information")
 
-        center_window(info_window, 360, 350)
+        center_window(info_window, 360, 380)
         
         # Display downtime information as labels
         fields = {
@@ -16,6 +16,7 @@ def info_window(downage):
             "Equipment ID": downage.eqid,
             "Details": downage.details,
             "Timestamp": downage.timestamp,
+            'Emails Sent': 'No' if downage.emails_sent == 0 else 'Yes',
             "Resolved": 'No' if downage.resolved == 0 else 'Yes',
             "Time Resolved": downage.time_resolved,
             "Time to Resolve": downage.time_to_resolve

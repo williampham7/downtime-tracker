@@ -18,6 +18,7 @@ class DowntimeDatabase:
                              details TEXT,
                              timestamp DATETIME,
                              resolved BOOLEAN DEFAULT FALSE,
+                             emails_sent BOOLEAN DEFAULT FALSE,
                              time_resolved DATETIME,  -- Added field for time resolved
                              time_to_resolve INTEGER)  -- Added field for time to resolve
                             ''')
@@ -25,8 +26,8 @@ class DowntimeDatabase:
 
     def add_downtime(self, downage_obj):
         # Insert the Downage object data into the database
-        self.cursor.execute('''INSERT INTO downtime (id, name, location, eqname, eqid, details, timestamp, resolved, time_resolved, time_to_resolve) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        self.cursor.execute('''INSERT INTO downtime (id, name, location, eqname, eqid, details, timestamp, resolved, emails_sent, time_resolved, time_to_resolve) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                             (downage_obj.id,
                              downage_obj.name,
                              downage_obj.location,
@@ -35,21 +36,22 @@ class DowntimeDatabase:
                              downage_obj.details,
                              downage_obj.timestamp,  # Store as a string
                              downage_obj.resolved,  # Store boolean as int (0 or 1)
+                             downage_obj.emails_sent,
                              downage_obj.time_resolved,  # Nullable, can be None
                              downage_obj.time_to_resolve))  # Nullable, can be None
         self.connection.commit()
 
     def get_all_downtime(self):
         # Retrieve all downtime entries from the database
-        self.cursor.execute("SELECT id, name, location, eqname, eqid, details, timestamp, resolved, time_resolved, time_to_resolve FROM downtime")
+        self.cursor.execute("SELECT id, name, location, eqname, eqid, details, timestamp, resolved, emails_sent, time_resolved, time_to_resolve FROM downtime")
         return self.cursor.fetchall()
     
     def get_all_unresolved(self):
         # Retrieve all UNRESOLVED Downage entries from the database
-        self.cursor.execute("SELECT id, name, location, eqname, eqid, details, timestamp, time_resolved, time_to_resolve FROM downtime WHERE resolved = 0")        
+        self.cursor.execute("SELECT id, name, location, eqname, eqid, details, timestamp, emails_sent, time_resolved, time_to_resolve FROM downtime WHERE resolved = 0")        
         return self.cursor.fetchall()
     
-    def resolve_downtime(self, downtime_id):
+    def resolve_downtime(self, downage_id):
         # Update the downtime's resolved field to 1 (resolved) and set time resolved
         time_resolved = datetime.now()
         self.cursor.execute('''UPDATE downtime 
@@ -59,7 +61,14 @@ class DowntimeDatabase:
                                WHERE id = ?''', 
                             (time_resolved, 
                              (time_resolved - datetime.now()).total_seconds(),  # Calculate time to resolve as needed
-                             downtime_id))
+                             downage_id))
+        self.connection.commit()
+
+    def update_emails_sent(self, downage_id):
+        self.cursor.execute('''UPDATE downtime 
+                    SET emails_sent = TRUE
+                    WHERE id = ?''', 
+                (downage_id,))
         self.connection.commit()
 
     def __del__(self):

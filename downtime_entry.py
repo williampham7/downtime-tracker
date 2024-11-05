@@ -123,8 +123,8 @@ class DowntimeEntry:
         self.update_actives()
 
     def update_actives(self):
-        self.dt_list = [Downage(name, location, eqname, eqid, details, id, timestamp) 
-                        for id, name, location, eqname, eqid, details, timestamp, _, _ in self.db_instance.get_all_unresolved()]
+        self.dt_list = [Downage(name, location, eqname, eqid, details, id, timestamp, emails_sent) 
+                        for id, name, location, eqname, eqid, details, timestamp, emails_sent, _, _ in self.db_instance.get_all_unresolved()]
         self.dt_ids = [d.id for d in self.dt_list]
 
         if self.dt_ids != self.id_checklist or self.update_counter >= 300:
@@ -164,7 +164,7 @@ class DowntimeEntry:
  
         # Downtime details (line and time elapsed)
         downtime_label = ttk.Label(active_downtime, text=f"{downage.location}\n{downage.elapsed_time_string()}", style = 'DownageLabel.TLabel')
-        downtime_label.grid(row=0, column=1, padx=(10,20), pady=5)
+        downtime_label.grid(row=0, column=1, padx=(0,20), pady=5)
 
         def resolve_downtime():
             print(downage)
@@ -193,10 +193,18 @@ class DowntimeEntry:
         # Create a new Downage object
         new_downage = Downage(name, line, eqname, eqid, details)
         self.db_instance.add_downtime(new_downage)
+        self.clear_fields()
 
     def open_viewer(self):
         downtime_viewer_window = DowntimeViewer(self.db)
         downtime_viewer_window.start()
+
+    def clear_fields(self):
+        self.name_entry.delete(0, ttk.END)
+        self.line_dropdown.set('')
+        self.eqname_entry.delete(0, ttk.END)
+        self.eqid_entry.delete(0, ttk.END)
+        self.details_entry.delete(0, ttk.END)
 
     def start(self):
         self.root.mainloop()

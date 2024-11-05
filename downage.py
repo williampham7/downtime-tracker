@@ -1,8 +1,9 @@
 from datetime import datetime
 import uuid
+from downtime_db_conn import DowntimeDatabase
 
 class Downage:
-    def __init__(self, name, location, eqname, eqid, details, id = None, timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), resolved=False, time_resolved=None, time_to_resolve=None):
+    def __init__(self, name, location, eqname, eqid, details, id = None, timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), emails_sent = False,resolved=False, time_resolved=None, time_to_resolve=None):
         self.id = id if id is not None else str(uuid.uuid4())
         self.name = name
         self.location = location
@@ -10,6 +11,7 @@ class Downage:
         self.eqid = eqid
         self.details = details
         self.resolved = resolved
+        self.emails_sent = emails_sent
         self.time_resolved = time_resolved
         self.time_to_resolve = time_to_resolve
 
@@ -20,12 +22,15 @@ class Downage:
         else:
             self.timestamp = None
 
-        # self.send_initial_message()
+        self.email_handler()
 
     def __repr__(self):
         # Customize how the object is displayed when printed
-        return (f"Downage(id='{self.id}, 'name='{self.name}', location='{self.location}', eqname='{self.eqname}', eqid='{self.eqid}', "
-                f"details='{self.details}', 'timestamp='{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}', resolved='{self.resolved}', time_resolved='{self.time_resolved}', time_to_resolve='{self.time_to_resolve}')")
+        return (f"Downage(id={self.id!r}, name={self.name!r}, location={self.location!r}, "
+                f"eqname={self.eqname!r}, eqid={self.eqid!r}, details={self.details!r}, "
+                f"timestamp={self.timestamp!r}, resolved={self.resolved!r}, "
+                f"emails_sent={self.emails_sent!r}, time_resolved={self.time_resolved!r}, "
+                f"time_to_resolve={self.time_to_resolve!r})")
     
     def elapsed_time(self):
         elapsed_time = datetime.now() - self.timestamp
@@ -48,22 +53,13 @@ class Downage:
             result = f"{minutes}m ago"
 
         return result
-    
-    def send_initial_message():
-        # send first emails 
-        return
 
-    def action(self):
-        if self.resolved == True:
-            return
-        
-        if self.stage == 1:
-            # send batch 2 emails
-            return
-        elif self.stage == 2:
-            # send batch 2 emails
-            return
+    def email_handler(self):
+        if self.emails_sent == False:
+            #call email_sender
 
+            db_instance = DowntimeDatabase()
+            db_instance.update_emails_sent(self.id)
 
 
 # # Example usage
