@@ -5,18 +5,15 @@ from email.mime.application import MIMEApplication
 import os
 
 class EmailHandler:
-    def __init__(self, smtp_server, smtp_port, smtp_user, smtp_password, sender_email):
-
-        
-
-
+    def __init__(self):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
         self.sender_email = sender_email
+        #get email list from config
 
-    def send_email(self, recipient_email, subject, body, attachment_path=None):
+    def send_email(self, recipient_email, subject, body):
         """
         Send an email with optional attachment.
         

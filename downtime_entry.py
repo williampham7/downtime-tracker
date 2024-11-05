@@ -89,7 +89,7 @@ class DowntimeEntry:
         self.line_label = ttk.Label(self.left_frame, text="Prod. Line / Area:", font = entry_font)
         self.line_label.grid(row=3, column=0, sticky=W)
         self.line_dropdown = ttk.Combobox(self.left_frame, values=self.line_options, width = 43)
-        self.line_dropdown.grid(row=4, column=0)
+        self.line_dropdown.grid(row=4, column=0, pady=5)
 
         # equipment name
         self.eqname_label = ttk.Label(self.left_frame, text="Equipment Name:", font = entry_font)
